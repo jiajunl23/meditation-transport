@@ -1,0 +1,150 @@
+<body style="background: white"></body>
+<script src="https://cdn.jsdelivr.net/gh/netizenorg/netnet-standard-library/build/nn.min.js"></script>
+<script src="https://unpkg.com/tone"></script>
+<script src="https://algorithmicmusic.online/js/viz-helpers.js"></script>
+<script>
+  /* global nn, Tone, viz */
+  
+  // sources
+  
+  const path = 'https://tonejs.github.io/audio/drum-samples/Stark/'
+  const drumset = new Tone.Players({
+    kick: path + 'kick.mp3',
+    snare: path + 'snare.mp3',
+    hihat: path + 'hihat.mp3',
+    tom1: path + 'tom1.mp3',
+    tom2: path + 'tom2.mp3',
+    tom3: path + 'tom3.mp3'
+  })
+
+  drumset.toDestination()
+  
+  
+  // musical settings
+  
+  // default speed
+  Tone.Transport.bpm.value = 240
+  
+  
+  // global variables
+  let step = 0
+  let num_tom1 = 0
+  let num_tom2 = 0
+  let num_tom3 = 0
+  
+  // functions
+  function toggle(){
+    if (Tone.Transport.state === "stopped"){
+      Tone.Transport.start()
+      this.content("stop")
+    }
+    else{
+      Tone.Transport.stop()
+      this.content("start")
+    }
+  }
+  
+  
+  function cal_chance(player, beat){
+    if (player === "kick") {
+      if (step <= 20) {
+        return 0
+      }
+      else {
+        return nn.random()
+      }
+    }
+    
+    if (player === "snare") {
+      if (step <= 20) {
+        if (beat % 4 === 0) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+      else {
+        return nn.random()
+      }
+    }
+    
+    if (player === "hihat") {
+      if (step <= 20) {
+        return 0
+      }
+      else {
+        return nn.random()
+      }
+    }
+    
+    if (player === "tom1") {
+      if (step <= 20) {
+        if (beat % 2 === 0) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+      else {
+        return nn.random()
+      }
+    }
+    
+    if (player === "tom2") {
+      if (step <= 20) {
+        return nn.random()
+      }
+      else {
+        return nn.random()
+      }
+    }
+    
+    if (player === "tom3") {
+      if (step <= 20) {
+        if (beat % 2 === 0) {
+          return 1
+        } else {
+          return nn.random()
+        }
+      }
+      else {
+        return nn.random()
+      }
+    }
+  }
+  
+  
+  
+  function play(time){
+    const beat = step % 4
+
+    if (cal_chance("kick", beat) > 0.5) drumset.player("kick").start(time)
+    if (cal_chance("snare", beat) > 0.5) drumset.player("snare").start(time)
+    if (cal_chance("hihat", beat) > 0.5) drumset.player("hihat").start(time)
+    if (cal_chance("tom1", beat) > 0.5) drumset.player("tom1").start(time)
+    if (cal_chance("tom2", beat) > 0.5) drumset.player("tom2").start(time)
+    if (cal_chance("tom3", beat) > 0.5) drumset.player("tom3").start(time)
+    
+    step++
+  }
+  
+  function updateBPM () {
+    Tone.Transport.bpm.value = this.value
+  }
+  
+  new Tone.Loop(play).start()
+
+  // UI
+  
+  nn.create("button")
+    .content("start")
+    .addTo("body")
+    .on("click", toggle)
+  
+  nn.create("input")
+    .set("type", "number")
+    .set("value", Tone.Transport.bpm.value)
+    .addTo("body")
+    .on("change", updateBPM)
+  
+</script>
