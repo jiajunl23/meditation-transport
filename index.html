@@ -16,21 +16,23 @@
     tom2: path + 'tom2.mp3',
     tom3: path + 'tom3.mp3'
   })
-
-  drumset.toDestination()
+  
+  const volume = new Tone.Gain(0.5)
+  
+  drumset.connect(volume)
+  
+  volume.toDestination()
   
   
   // musical settings
   
-  // default speed
+  // Transport settings
   Tone.Transport.bpm.value = 240
+  Tone.Transport.timeSignature = 4
+  // Tone.Transport.loop = true
+  Tone.Transport.loopend = "10m"
   
   
-  // global variables
-  let step = 0
-  let num_tom1 = 0
-  let num_tom2 = 0
-  let num_tom3 = 0
   const list_players = ["kick", "snare", "hihat", "tom1", "tom2", "tom3"]
   
   // functions
@@ -46,9 +48,9 @@
   }
   
   // the chance calculation 
-  function cal_chance(player, beat){
+  function cal_chance(player, bar, beat){
     if (player === "kick") {
-      if (step <= 20) {
+      if (bar < 5) {
         return 0
       }
       else {
@@ -61,7 +63,7 @@
     }
     
     if (player === "snare") {
-      if (step <= 20) {
+      if (bar < 5) {
         if (beat % 4 === 0) {
           return 1
         } else {
@@ -74,7 +76,7 @@
     }
     
     if (player === "hihat") {
-      if (step <= 20) {
+      if (bar < 5) {
         return 0
       }
       else {
@@ -87,7 +89,7 @@
     }
     
     if (player === "tom1") {
-      if (step <= 20) {
+      if (bar < 5) {
         if (beat % 2 === 0) {
           return 1
         } else {
@@ -100,7 +102,7 @@
     }
     
     if (player === "tom2") {
-      if (step <= 20) {
+      if (bar < 5) {
         if (beat % 3 === 0) {
           return 1
         } else {
@@ -113,7 +115,7 @@
     }
     
     if (player === "tom3") {
-      if (step <= 20) {
+      if (bar < 5) {
         if (beat % 3 === 0) {
           return 1
         } else {
@@ -133,40 +135,27 @@
   
   
   function play(time){
-    const beat = step % 4
+    
+    const pos = Tone.Transport.position.split(":").map(Number)
+    const bar = pos[0]
+    const beat = pos[1]
+    
+    if (bar >= 5){
+      label.css({
+        color: "red"
+      })
+    }
     
     for (const player of list_players){
-      if (cal_chance(player, beat) > 0.5) {
+      if (cal_chance(player, bar, beat) > 0.5) {
         drumset.player(player).start(time)
       }
-      if (cal_chance(player, beat) > 1) {
+      if (cal_chance(player, bar, beat) > 1) {
         drumset.player(player).start(time + (30 / Tone.Transport.bpm.value))
       }
     }
-
-    // if (cal_chance("kick", beat) > 0.5) {
-    //   drumset.player("kick").start(time)
-    // }
-    // if (cal_chance("snare", beat) > 0.5){
-    //   drumset.player("snare").start(time)
-    // }
-    // if (cal_chance("hihat", beat) > 0.5){
-    //   drumset.player("hihat").start(time)
-    // } 
-    // if (cal_chance("tom1", beat) > 0.5) {
-    //   drumset.player("tom1").start(time)
-    // }
-      
-    // if (cal_chance("tom2", beat) > 0.5){
-    //   drumset.player("tom2").start(time)
-    // }
     
-    // if (cal_chance("tom3", beat) > 0.5){
-    //   drumset.player("tom3").start(time)
-    // } 
-      
-    
-    step++
+    label.content(`measure: ${bar}, beat: ${beat}`)
   }
   
   function updateBPM () {
@@ -187,5 +176,25 @@
     .set("value", Tone.Transport.bpm.value)
     .addTo("body")
     .on("change", updateBPM)
+  
+  nn.create("br").addTo("body")
+  
+  const label = nn.create("label")
+                 .css({
+                   color: "blue"
+                 })
+                 .content("measure: 0, beat: 0")
+                 .addTo("body")
+  
+  nn.create("br").addTo("body")
+  nn.create("br").addTo("body")
+  nn.create("label")
+    .content("I started with the code that I followed coding during lecture and built on that. I first chose a drumset that I liked, and then I began thinking of right now with only nn.random() or beat % a_number === 0, there is just not enough variations. Therefore, I decided to make more possible restrictions by using a function called cal_chance that takes in a player's name and then basically calculate a probability that it should play. In this way, it is easier to manage how I would want them to appear more frequently or at a specific point. As I wanted a intro, I also added a variation that the first 5 measures of should not be the same when calculating the chances. To further increase the variations of the rhythm, I thought I can also make the drums play a second time before the next beat, so I added that if chance > 1, then the drum will also play a second time befor the next beat. Then, I referrenced the template of the assignment, I changed the the way that beats were calculated which is through incrementing steps each time to use Transport's own property like in the template, and added a UI to display measure and beat.")
+    .addTo("body")
+  nn.create("br").addTo("body")
+  nn.create("label")
+    .content("Originally, in the above steps, I didn't intend to use Tone.Transport.loop = true because it would destroy the intro part as the intro part would come back again. But later I wanted to test if it actually sounds good for the intro part to repeat, after setting Tone.Transport.loop = true it will produce a very high pitch tone. After asking claude about it, it cannot pinpoint the problem. ")
+    .addTo("body")
+  
   
 </script>
