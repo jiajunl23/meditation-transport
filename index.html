@@ -31,6 +31,7 @@
   let num_tom1 = 0
   let num_tom2 = 0
   let num_tom3 = 0
+  const list_players = ["kick", "snare", "hihat", "tom1", "tom2", "tom3"]
   
   // functions
   function toggle(){
@@ -44,14 +45,18 @@
     }
   }
   
-  
+  // the chance calculation 
   function cal_chance(player, beat){
     if (player === "kick") {
       if (step <= 20) {
         return 0
       }
       else {
-        return nn.random()
+        if (beat % 4 === 0) {
+          return nn.random()
+        } else {
+          return 0
+        }
       }
     }
     
@@ -64,7 +69,7 @@
         }
       }
       else {
-        return nn.random()
+        return nn.random(0, 0.8) 
       }
     }
     
@@ -73,7 +78,11 @@
         return 0
       }
       else {
-        return nn.random()
+        if (nn.random() > 0.8){
+          return 0
+        } else{
+          return 0
+        }
       }
     }
     
@@ -86,22 +95,13 @@
         }
       }
       else {
-        return nn.random()
+        return nn.random(0, 1.1)
       }
     }
     
     if (player === "tom2") {
       if (step <= 20) {
-        return nn.random()
-      }
-      else {
-        return nn.random()
-      }
-    }
-    
-    if (player === "tom3") {
-      if (step <= 20) {
-        if (beat % 2 === 0) {
+        if (beat % 3 === 0) {
           return 1
         } else {
           return nn.random()
@@ -111,19 +111,60 @@
         return nn.random()
       }
     }
+    
+    if (player === "tom3") {
+      if (step <= 20) {
+        if (beat % 3 === 0) {
+          return 1
+        } else {
+          return nn.random()
+        }
+      }
+      else {
+        if (nn.random(0, 1) > 0.2) {
+          return 2
+        } else {
+          return nn.random()
+        }
+      }
+    }
   }
   
   
   
   function play(time){
     const beat = step % 4
+    
+    for (const player of list_players){
+      if (cal_chance(player, beat) > 0.5) {
+        drumset.player(player).start(time)
+      }
+      if (cal_chance(player, beat) > 1) {
+        drumset.player(player).start(time + (30 / Tone.Transport.bpm.value))
+      }
+    }
 
-    if (cal_chance("kick", beat) > 0.5) drumset.player("kick").start(time)
-    if (cal_chance("snare", beat) > 0.5) drumset.player("snare").start(time)
-    if (cal_chance("hihat", beat) > 0.5) drumset.player("hihat").start(time)
-    if (cal_chance("tom1", beat) > 0.5) drumset.player("tom1").start(time)
-    if (cal_chance("tom2", beat) > 0.5) drumset.player("tom2").start(time)
-    if (cal_chance("tom3", beat) > 0.5) drumset.player("tom3").start(time)
+    // if (cal_chance("kick", beat) > 0.5) {
+    //   drumset.player("kick").start(time)
+    // }
+    // if (cal_chance("snare", beat) > 0.5){
+    //   drumset.player("snare").start(time)
+    // }
+    // if (cal_chance("hihat", beat) > 0.5){
+    //   drumset.player("hihat").start(time)
+    // } 
+    // if (cal_chance("tom1", beat) > 0.5) {
+    //   drumset.player("tom1").start(time)
+    // }
+      
+    // if (cal_chance("tom2", beat) > 0.5){
+    //   drumset.player("tom2").start(time)
+    // }
+    
+    // if (cal_chance("tom3", beat) > 0.5){
+    //   drumset.player("tom3").start(time)
+    // } 
+      
     
     step++
   }
